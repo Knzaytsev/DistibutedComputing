@@ -42,6 +42,7 @@ namespace Pipes
             PipeHandle = DIS.Import.CreateNamedPipe(tbPipe.Text + tbLogin.Text, DIS.Types.PIPE_ACCESS_DUPLEX, DIS.Types.PIPE_TYPE_BYTE | DIS.Types.PIPE_WAIT, DIS.Types.PIPE_UNLIMITED_INSTANCES, 0, 1024, DIS.Types.NMPWAIT_WAIT_FOREVER, (uint)0);
 
             btnLogin.Enabled = false;
+            btnSend.Enabled = true;
         }
 
         private void SendMessage(string message)
