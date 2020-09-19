@@ -64,14 +64,7 @@ namespace Pipes
 
                     if (msg.Contains("<DISCONNECT>"))
                     {
-                        //uint realBytesWritten = 0;
                         msg = msg.Replace("<DISCONNECT>", "");
-                        /*Int32 clientPipeHandle = DIS.Import.CreateFile("\\\\.\\pipe\\ServerPipe" + msg, DIS.Types.EFileAccess.GenericWrite, DIS.Types.EFileShare.Read, 0, DIS.Types.ECreationDisposition.OpenExisting, 0, 0);
-                        //Int32 clientPipeHandle = DIS.Import.CreateNamedPipe("\\\\.\\pipe\\ServerPipe" + client.Key, DIS.Types.PIPE_ACCESS_DUPLEX, DIS.Types.PIPE_TYPE_BYTE | DIS.Types.PIPE_WAIT, DIS.Types.PIPE_UNLIMITED_INSTANCES, 0, 1024, DIS.Types.NMPWAIT_WAIT_FOREVER, (uint)0);
-                        DIS.Import.WriteFile(clientPipeHandle, buff, Convert.ToUInt32(buff.Length), ref realBytesWritten, 0);
-                        DIS.Import.DisconnectNamedPipe(clientPipeHandle);
-                        DIS.Import.CloseHandle(clientPipeHandle);*/
-                        SendMessage(msg, "");
                         if (clients.ContainsKey(msg))
                             clients.Remove(msg);
                         msg = "User " + msg + " has disconnected!";
@@ -93,17 +86,9 @@ namespace Pipes
 
         private void SendMessages(string message)
         {
-            /*byte[] buff = new byte[1024];
-            uint realBytesWritten = 0;
-            buff = Encoding.Unicode.GetBytes(message);*/
             foreach(var client in clients)
             {
                 SendMessage(client.Key, message);
-                /*Int32 clientPipeHandle = DIS.Import.CreateFile("\\\\.\\pipe\\ServerPipe" + client.Key, DIS.Types.EFileAccess.GenericWrite, DIS.Types.EFileShare.Read, 0, DIS.Types.ECreationDisposition.OpenExisting, 0, 0);
-                //Int32 clientPipeHandle = DIS.Import.CreateNamedPipe("\\\\.\\pipe\\ServerPipe" + client.Key, DIS.Types.PIPE_ACCESS_DUPLEX, DIS.Types.PIPE_TYPE_BYTE | DIS.Types.PIPE_WAIT, DIS.Types.PIPE_UNLIMITED_INSTANCES, 0, 1024, DIS.Types.NMPWAIT_WAIT_FOREVER, (uint)0);
-                DIS.Import.WriteFile(clientPipeHandle, buff, Convert.ToUInt32(buff.Length), ref realBytesWritten, 0);
-                DIS.Import.DisconnectNamedPipe(clientPipeHandle);
-                DIS.Import.CloseHandle(clientPipeHandle);*/
             }
         }
 
@@ -123,9 +108,14 @@ namespace Pipes
 
             if (t != null)
                 t.Abort();          // завершаем поток
+
             
             if (PipeHandle != -1)
+            {
+                SendMessage("", "");
                 DIS.Import.CloseHandle(PipeHandle);     // закрываем дескриптор канала
+            }
+                
         }
     }
 }

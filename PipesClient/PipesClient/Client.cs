@@ -29,11 +29,6 @@ namespace Pipes
         private void btnSend_Click(object sender, EventArgs e)
         {
             SendMessage(tbLogin.Text + ": " + tbMessage.Text);
-            /*uint BytesWritten = 0;  // количество реально записанных в канал байт
-            byte[] buff = Encoding.Unicode.GetBytes(tbLogin.Text + ": " + tbMessage.Text);
-            Int32 tempPipeHandle = DIS.Import.CreateFile(tbPipe.Text, DIS.Types.EFileAccess.GenericWrite, DIS.Types.EFileShare.Read, 0, DIS.Types.ECreationDisposition.OpenExisting, 0, 0);
-            DIS.Import.WriteFile(tempPipeHandle, buff, Convert.ToUInt32(buff.Length), ref BytesWritten, 0);         // выполняем запись последовательности байт в канал
-            DIS.Import.CloseHandle(tempPipeHandle);*/
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
@@ -41,16 +36,10 @@ namespace Pipes
             t = new Thread(ReadMessages);
             t.Start();
 
-            /*uint BytesWritten = 0;  // количество реально записанных в канал байт
-            byte[] buff = Encoding.Unicode.GetBytes(tbLogin.Text + @"<LOGIN>");
-
-            Int32 tempPipeHandle = DIS.Import.CreateFile(tbPipe.Text, DIS.Types.EFileAccess.GenericWrite, DIS.Types.EFileShare.Read, 0, DIS.Types.ECreationDisposition.OpenExisting, 0, 0);
-            DIS.Import.WriteFile(tempPipeHandle, buff, Convert.ToUInt32(buff.Length), ref BytesWritten, 0);
-            DIS.Import.CloseHandle(tempPipeHandle);*/
             SendMessage(tbLogin.Text + @"<LOGIN>");
 
             // открываем именованный канал, имя которого указано в поле tbPipe
-            PipeHandle = DIS.Import.CreateNamedPipe("\\\\.\\pipe\\ServerPipe" + tbLogin.Text, DIS.Types.PIPE_ACCESS_DUPLEX, DIS.Types.PIPE_TYPE_BYTE | DIS.Types.PIPE_WAIT, DIS.Types.PIPE_UNLIMITED_INSTANCES, 0, 1024, DIS.Types.NMPWAIT_WAIT_FOREVER, (uint)0);
+            PipeHandle = DIS.Import.CreateNamedPipe(tbPipe.Text + tbLogin.Text, DIS.Types.PIPE_ACCESS_DUPLEX, DIS.Types.PIPE_TYPE_BYTE | DIS.Types.PIPE_WAIT, DIS.Types.PIPE_UNLIMITED_INSTANCES, 0, 1024, DIS.Types.NMPWAIT_WAIT_FOREVER, (uint)0);
 
             btnLogin.Enabled = false;
         }
@@ -84,6 +73,16 @@ namespace Pipes
             }
         }
 
+        private void Disconnect()
+        {
+            uint realBytesWritten = 0;
+            byte[] buff = Encoding.Unicode.GetBytes("");
+            Int32 clientPipeHandle = DIS.Import.CreateFile(tbPipe.Text + tbLogin.Text, DIS.Types.EFileAccess.GenericWrite, DIS.Types.EFileShare.Read, 0, DIS.Types.ECreationDisposition.OpenExisting, 0, 0);
+            DIS.Import.WriteFile(clientPipeHandle, buff, Convert.ToUInt32(buff.Length), ref realBytesWritten, 0);
+            DIS.Import.DisconnectNamedPipe(clientPipeHandle);
+            DIS.Import.CloseHandle(clientPipeHandle);
+        }
+
         private void frmMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             _continue = false;
@@ -94,6 +93,9 @@ namespace Pipes
             if (PipeHandle != -1)
             {
                 SendMessage(tbLogin.Text + "<DISCONNECT>");
+
+                Disconnect();
+
                 DIS.Import.CloseHandle(PipeHandle);
             }
         }
